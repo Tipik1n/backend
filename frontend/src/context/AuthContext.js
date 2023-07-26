@@ -30,8 +30,6 @@ export const AuthProvider = ({ children }) => {
         })
         let data = await response.json()
 
-        console.log('data', data)
-        console.log('response', response)
         if (response.status === 200) {
             setAuthTokens(data)
             setUser(jwt_decode(data.access))
@@ -57,7 +55,7 @@ export const AuthProvider = ({ children }) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({'refresh' : authTokens.refresh})
+            body: JSON.stringify({'refresh' : authTokens?.refresh})
         }) 
         let data = await response.json()
 
@@ -70,31 +68,36 @@ export const AuthProvider = ({ children }) => {
             logoutUser()
         }
 
-        // if (loading) {
-        //     setLoading(false)
-        // }
-
+        if (loading) {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
 
+        if (loading) {
+            updateToken()
+        }
+        
+        let fourMinutes = 1000 * 60 * 4
         let interval = setInterval(() => {
             if (authTokens){
                 updateToken()
             }
-        }, 2000)
+        }, fourMinutes)
         return () => clearInterval(interval)
                     
     }, [authTokens, loading])
 
     let contextData = {
         user: user,
+        authTokens: authTokens,
         loginUser: loginUser,
         logoutUser: logoutUser
     }
      return(
         <AuthContext.Provider value={contextData} >
-            {children}
+            {loading ? null : children}
         </AuthContext.Provider>
      )
 }
